@@ -4,6 +4,9 @@
 # > ./canon_copy.sh /Volumes/EOS_DIGITAL/ /Volumes/MyPassport-NEW-ARCHIVE/CANADA_photos/
 #
 # Copies DCIM/*CANON/* into TARGET/YYYY/YYYY-MM-DD/ by file mtime.
+# Files already in the target are skipped. Each copy is written to a hidden
+# .NAME.part file and renamed when complete, so an interrupted run never
+# leaves a truncated file under its final name; just re-run it.
 
 set -euo pipefail
 set -C
@@ -25,7 +28,14 @@ for FILE in "$CANONS"/*CANON/*; do
   [[ -f "$FILE" ]] || continue
   DATE=$(stat -f %Sm -t "%Y-%m-%d" "$FILE")
   YEAR=${DATE:0:4}
-  mkdir -p "$TARGET/$YEAR/$DATE"
-  echo "$FILE -> $TARGET/$YEAR/$DATE"
-  cp -a -f "$FILE" "$TARGET/$YEAR/$DATE"
+  DEST="$TARGET/$YEAR/$DATE"
+  NAME=$(basename "$FILE")
+  if [[ -e "$DEST/$NAME" ]]; then
+    echo "skip (exists): $DEST/$NAME"
+    continue
+  fi
+  mkdir -p "$DEST"
+  echo "$FILE -> $DEST"
+  cp -a -f "$FILE" "$DEST/.$NAME.part"
+  mv "$DEST/.$NAME.part" "$DEST/$NAME"
 done
