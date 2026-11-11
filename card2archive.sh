@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run as:
-# > ./canon_copy.sh [-n|--dry-run] /Volumes/EOS_DIGITAL/ /Volumes/ARCHIVE/Photos/
+# > ./card2archive.sh [-n|--dry-run] /Volumes/EOS_DIGITAL/ /Volumes/ARCHIVE/Photos/
 #
 # Copies files from the card's DCF folders (DCIM/NNNxxxxx/*, e.g. 100CANON,
 # 100NIKON, 100MSDCF) into TARGET/YYYY/YYYY-MM-DD/ by file mtime. Video stored
