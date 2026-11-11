@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # Run as:
-# > ./canon_copy.sh [-n|--dry-run] /Volumes/EOS_DIGITAL/ /Volumes/MyPassport-NEW-ARCHIVE/CANADA_photos/
+# > ./canon_copy.sh [-n|--dry-run] /Volumes/EOS_DIGITAL/ /Volumes/ARCHIVE/Photos/
 #
-# Copies DCIM/*CANON/* into TARGET/YYYY/YYYY-MM-DD/ by file mtime.
+# Copies files from the card's DCF folders (DCIM/NNNxxxxx/*, e.g. 100CANON,
+# 100NIKON, 100MSDCF) into TARGET/YYYY/YYYY-MM-DD/ by file mtime. Video stored
+# outside DCIM (Sony PRIVATE/M4ROOT, AVCHD) is not copied.
 # -n, --dry-run: show what would be copied or skipped without writing anything.
 #
 # Files already in the target are skipped; a skipped file whose size differs
@@ -30,15 +32,15 @@ fi
 
 SOURCE="${1%/}"
 TARGET="${2%/}"
-CANONS="$SOURCE/DCIM"
+DCIM_DIR="$SOURCE/DCIM"
 
-[[ -d "$CANONS" ]] || { echo "no DCIM folder in '$SOURCE'" >&2; exit 1; }
+[[ -d "$DCIM_DIR" ]] || { echo "no DCIM folder in '$SOURCE'" >&2; exit 1; }
 [[ -d "$TARGET" ]] || { echo "target '$TARGET' does not exist" >&2; exit 1; }
 
-FILES=("$CANONS"/*CANON/*)
+FILES=("$DCIM_DIR"/[0-9][0-9][0-9]*/*)
 TOTAL=${#FILES[@]}
 if (( TOTAL == 0 )); then
-  echo "no files found in $CANONS/*CANON/"
+  echo "no files found in $DCIM_DIR/NNN*/"
   exit 0
 fi
 
@@ -59,7 +61,7 @@ for FILE in "${FILES[@]}"; do
   REL_DEST="$YEAR/$DATE"
   DEST="$TARGET/$REL_DEST"
   NAME=$(basename "$FILE")
-  REL_SRC="${FILE#"$CANONS"/}"
+  REL_SRC="${FILE#"$DCIM_DIR"/}"
   PREFIX=$(printf "[%*d/%d]" ${#TOTAL} "$I" "$TOTAL")
 
   if [[ -e "$DEST/$NAME" ]]; then
